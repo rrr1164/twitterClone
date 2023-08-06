@@ -25,20 +25,15 @@ class _ComposeTweetDialogState extends State<ComposeTweetDialog> {
   TextEditingController tweetController = TextEditingController();
   bool _validate = false;
   TweetsRepository tweetsRepository = TweetsRepository();
-  XFile? image;
+  List<XFile> tweetImages = [];
 
   Future pickImage() async {
     try {
-      final image = await ImagePicker()
-          .pickImage(source: ImageSource.gallery, imageQuality: 50);
-      if (image == null) return;
-      final imageTemporary = XFile(image.path);
-      setState(() {
-        this.image = imageTemporary;
-      });
+      tweetImages = await ImagePicker().pickMultiImage();
     } on PlatformException {
       debugPrint("Failed to pick Image");
     }
+    setState(() {});
   }
 
   @override
@@ -56,83 +51,93 @@ class _ComposeTweetDialogState extends State<ComposeTweetDialog> {
       contentPadding: const EdgeInsets.only(
         top: 10.0,
       ),
-      content: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              DetectableTextField(
-                controller: tweetController,
-                keyboardType: TextInputType.multiline,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  hintText: 'What is happening?',
-                  errorText: _validate ? 'Value Can\'t Be Empty' : null,
-                ),
-                detectionRegExp: detectionRegExp(atSign: false, url: false)!,
+      content: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DetectableTextField(
+              controller: tweetController,
+              keyboardType: TextInputType.multiline,
+              maxLines: 3,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                hintText: 'What is happening?',
+                errorText: _validate ? 'Value Can\'t Be Empty' : null,
               ),
-              const SizedBox(
-                height: 20,
+              detectionRegExp: detectionRegExp(atSign: false, url: false)!,
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            if (tweetImages.isNotEmpty)
+              Expanded(
+                child: SizedBox(
+                    width: 300,
+                    child: GridView.builder(
+                        itemCount: tweetImages.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3),
+                        itemBuilder: (BuildContext context, int index) {
+                          return Image.file(
+                            File(tweetImages[index].path),
+                            fit: BoxFit.cover,
+                          );
+                        })),
               ),
-              if (image != null)
-                Image.file(
-                  File(image!.path),
-                  width: MediaQuery.of(context).size.width,
-                  height: 200,
-                  fit: BoxFit.fill,
-                ),
-              const SizedBox(
-                height: 20,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      pickImage();
-                    },
-                    icon: const Icon(
-                      Icons.image,
-                      color: Colors.blue,
-                      size: 36,
-                    ),
+            const SizedBox(
+              height: 20,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    pickImage();
+                  },
+                  icon: const Icon(
+                    Icons.image,
+                    color: Colors.blue,
+                    size: 36,
                   ),
-                  CircleAvatar(
-                      child: IconButton(
-                    onPressed: () async {
-
-                      _validate =
-                          tweetController.text.isEmpty;
-                      if (!_validate) {
-                        showLoaderDialog(context);
-                        try {
-                          Tweet tweet = Tweet(content: tweetController.text);
-                          if (image != null) {
-                            tweet.imageUrl = await uploadTweetImage(image!);
+                ),
+                CircleAvatar(
+                    child: IconButton(
+                  onPressed: () async {
+                    _validate = tweetController.text.isEmpty;
+                    if (!_validate) {
+                      showLoaderDialog(context);
+                      try {
+                        Tweet tweet = Tweet(content: tweetController.text);
+                        if (tweetImages.isNotEmpty) {
+                          List<String> imagesUrl = [];
+                          for(XFile tweetImage in tweetImages){
+                            imagesUrl.add(await uploadTweetImage(tweetImage));
                           }
-                          await tweetsRepository.insertTweet(
-                              tweet, FirebaseAuth.instance.currentUser!.uid);
-                        } catch (error) {
-                          Utilities.showErrorSnackBar(
-                              context, "Error adding tweet");
+                          tweet.setImageUrls(imagesUrl);
                         }
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          Navigator.of(context).pop();
-                        }
-                      } else {
+                        await tweetsRepository.insertTweet(
+                            tweet, FirebaseAuth.instance.currentUser!.uid);
+                      } catch (error) {
                         Utilities.showErrorSnackBar(
-                            context, "can't have more than 1 hashtag");
+                            context, "Error adding tweet");
                       }
-                    },
-                    icon: const Icon(Icons.send_outlined),
-                  )),
-                ],
-              ),
-            ],
-          ),
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        Navigator.of(context).pop();
+                      }
+                    } else {
+                      Utilities.showErrorSnackBar(
+                          context, "can't have more than 1 hashtag");
+                    }
+                  },
+                  icon: const Icon(Icons.send_outlined),
+                )),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -145,5 +150,4 @@ class _ComposeTweetDialogState extends State<ComposeTweetDialog> {
       throw "error uploading tweet image ";
     }
   }
-
 }

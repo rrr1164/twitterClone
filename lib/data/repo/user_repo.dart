@@ -5,21 +5,51 @@ class UserRepo {
   final UserService service = UserService();
 
   Future<void> insertUser(UserModel userModel) async {
-    return await service.insertUser(userModel);
+    try{
+      return await service.insertUser(userModel);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
   Future<List<UserModel>> searchUsers(String searchTerm,String firebaseId) async {
-    return await service.searchUsers(searchTerm,firebaseId);
+    try{
+      return await service.searchUsers(searchTerm,firebaseId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
   Future<UserModel> getUserByFirebaseId(String firebaseId) async {
-    return await service.getUserByFirebaseId(firebaseId);
+    try{
+      return await service.getUserByFirebaseId(firebaseId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
     Future<void> updateUser(UserModel newUser, String firebaseId) async {
-    return await service.updateUser(newUser, firebaseId);
+      try{
+        return await service.updateUser(newUser,firebaseId);
+      }
+      catch(error){
+        throw error.toString();
+      }
   }
   Future<void> followUser(String followerFirebaseId, String followedFirebaseId) async {
-    return await service.followUser(followerFirebaseId, followedFirebaseId);
+    try{
+      return await service.followUser(followerFirebaseId,followedFirebaseId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
   Future<void> unFollowUser(String followerFirebaseId, String followedFirebaseId) async {
-    return await service.unFollowUser(followerFirebaseId, followedFirebaseId);
+    try{
+      return await service.unFollowUser(followerFirebaseId,followedFirebaseId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
 }

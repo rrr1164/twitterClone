@@ -1,7 +1,3 @@
-
-https://github.com/rrr1164/twitterClone/assets/120421179/17db521e-8deb-4c4f-ab59-43d63d9a05bb
-
-
 # twitterclone
 
 A new Flutter project.

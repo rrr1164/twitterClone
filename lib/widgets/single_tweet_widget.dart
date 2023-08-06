@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_images/carousel_images.dart';
 import 'package:detectable_text_field/detectable_text_field.dart';
 import 'package:detectable_text_field/detector/sample_regular_expressions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -58,10 +59,10 @@ class _SingleTweetState extends State<SingleTweet> {
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) =>
-                            UserDetailsScreen(user: widget.tweet.poster)));
+                            UserDetailsScreen(user: widget.tweet.getPoster())));
                   },
                   child: CachedNetworkImage(
-                    imageUrl: widget.tweet.poster.photoUrl,
+                    imageUrl: widget.tweet.getPoster().photoUrl,
                     placeholder: (context, url) => const CircleAvatar(
                       backgroundColor: Colors.blue,
                       radius: 25,
@@ -81,7 +82,7 @@ class _SingleTweetState extends State<SingleTweet> {
                     Padding(
                       padding: const EdgeInsets.only(top: 10.0, left: 5),
                       child: Text(
-                        widget.tweet.poster.userName,
+                        widget.tweet.getPoster().userName,
                         style: TextStyle(
                             fontWeight: FontWeight.w400,
                             fontFamily: GoogleFonts.poppins().fontFamily,
@@ -92,7 +93,7 @@ class _SingleTweetState extends State<SingleTweet> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 4.0, horizontal: 5),
                       child: DetectableText(
-                        text: widget.tweet.content,
+                        text: widget.tweet.getContent(),
                         detectionRegExp:
                             detectionRegExp(atSign: false, url: false)!,
                         onTap: (tappedText) {
@@ -113,16 +114,15 @@ class _SingleTweetState extends State<SingleTweet> {
                     const SizedBox(
                       height: 10,
                     ),
-                    if (widget.tweet.imageUrl != null) ...[
-                      CachedNetworkImage(
-                        imageUrl: widget.tweet.imageUrl!,
-                        width: MediaQuery.of(context).size.width / 1.3,
-                        height: 200,
-                        fit: BoxFit.cover,
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
+                    if (widget.tweet.getImageUrls().isNotEmpty) ...[
+                      CarouselImages(
+                        scaleFactor: 0.6,
+                        listImages: widget.tweet.getImageUrls(),
+                        height: 300.0,
+                        borderRadius: 30.0,
+                        cachedNetworkImage: true,
+                        verticalAlignment: Alignment.topCenter
+                      )
                     ],
                     Padding(
                       padding: const EdgeInsets.only(top: 3.0, left: 10),
@@ -148,24 +148,24 @@ class _SingleTweetState extends State<SingleTweet> {
       padding: const EdgeInsets.only(left: 23.0),
       child: GestureDetector(
         onTap: () async {
-          if (widget.tweet.isLiked && widget.tweet.likes <= 0) return;
-          bool oldLikedStatus = widget.tweet.isLiked;
+          if (widget.tweet.getIsLiked() && widget.tweet.getLikes() <= 0) return;
+          bool oldLikedStatus = widget.tweet.getIsLiked();
           setState(() {
-            if (widget.tweet.isLiked) {
-              widget.tweet.likes--;
+            if (widget.tweet.getIsLiked()) {
+              widget.tweet.setLikes(widget.tweet.getLikes()-1);
             } else {
-              widget.tweet.likes++;
+              widget.tweet.setLikes(widget.tweet.getLikes()+1);
             }
-            widget.tweet.isLiked = !widget.tweet.isLiked;
+            widget.tweet.setIsLiked(!widget.tweet.getIsLiked());
           });
           if (oldLikedStatus) {
-            if (widget.tweet.likes >= 0) {
+            if (widget.tweet.getLikes() >= 0) {
               await widget.tweetsRepository.unLikeTweet(
-                  widget.tweet.id, FirebaseAuth.instance.currentUser!.uid);
+                  widget.tweet.getId(), FirebaseAuth.instance.currentUser!.uid);
             }
           } else {
             await widget.tweetsRepository.likeTweet(
-                widget.tweet.id, FirebaseAuth.instance.currentUser!.uid);
+                widget.tweet.getId(), FirebaseAuth.instance.currentUser!.uid);
           }
         },
         child: Text.rich(
@@ -174,12 +174,12 @@ class _SingleTweetState extends State<SingleTweet> {
               WidgetSpan(
                   child: Container(
                       padding: const EdgeInsets.only(right: 8),
-                      child: widget.tweet.isLiked
+                      child: widget.tweet.getIsLiked()
                           ? const Icon(FontAwesomeIcons.solidHeart,
                               color: Colors.red)
                           : const Icon(FontAwesomeIcons.heart))),
               TextSpan(
-                  text: '${widget.tweet.likes}',
+                  text: '${widget.tweet.getLikes()}',
                   style: const TextStyle(color: Colors.black54)),
             ],
           ),
@@ -199,9 +199,9 @@ class _SingleTweetState extends State<SingleTweet> {
             }).then((added) {
           if (added) {
             setState(() {
-              widget.tweet.commentsCount++;
+              widget.tweet.setCommentsCount(widget.tweet.getCommentsCount()+1);
             });
-            context.read<TweetCommentsCubit>().fetchComments(widget.tweet.id);
+            context.read<TweetCommentsCubit>().fetchComments(widget.tweet.getId());
           }
         });
       },
@@ -213,7 +213,7 @@ class _SingleTweetState extends State<SingleTweet> {
                     padding: const EdgeInsets.only(right: 8),
                     child: const Icon(FontAwesomeIcons.comment))),
             TextSpan(
-                text: '${widget.tweet.commentsCount}',
+                text: '${widget.tweet.getCommentsCount()}',
                 style: const TextStyle(color: Colors.black54)),
           ],
         ),

@@ -34,6 +34,7 @@ dependencies:
   firebase_core: ^2.13.0
   firebase_auth: ^4.6.1
   detectable_text_field: ^2.1.0
+  carousel_images: ^1.1.2
   http: ^0.13.6
   image_picker: ^0.8.7+4
   firebase_storage: ^11.2.1

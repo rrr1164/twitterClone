@@ -71,7 +71,7 @@ class _ComposeCommentDialogState extends State<ComposeCommentDialog> {
                     showLoaderDialog(context);
                     try {
                       await tweetsRepository.postComment(
-                          commentController.text,widget.tweet.id, FirebaseAuth.instance.currentUser!.uid);
+                          commentController.text,widget.tweet.getId(), FirebaseAuth.instance.currentUser!.uid);
                       added = true;
                     } catch (error) {
                       Utilities.showErrorSnackBar(

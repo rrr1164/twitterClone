@@ -20,6 +20,6 @@ class Utilities{
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
-  static const baseApiUrl = "https://boskier-miles.000webhostapp.com";
+  static const baseApiUrl = "https://yousef-shora.in/twitter/";
 
 }

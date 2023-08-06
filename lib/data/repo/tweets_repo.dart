@@ -7,38 +7,82 @@ class TweetsRepository {
   TweetsService service = TweetsService();
 
   Future<List<Tweet>> getFollowedTweetsByFirebaseId(String firebaseId) async {
-    return await service.getFollowedTweetsByFirebaseId(firebaseId);
+    try{
+      return await service.getFollowedTweetsByFirebaseId(firebaseId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
   Future<List<Tweet>> getUserTweetsByFirebaseId(String firebaseId,String askerFirebaseId) async {
-    return await service.getUserTweetsByFirebaseId(firebaseId,askerFirebaseId);
+    try{
+      return await service.getUserTweetsByFirebaseId(firebaseId,askerFirebaseId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
 
   Future<List<Comment>> getCommentsByTweetId(int tweetId) async {
-    return await service.getCommentsByTweetId(tweetId);
+    try{
+      return await service.getCommentsByTweetId(tweetId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
 
   Future<void> deleteComment(int commentId) async {
-    return await service.deleteComment(commentId);
+    try{
+      return await service.deleteComment(commentId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
 
   Future<void> postComment(
       String comment, int tweetId, String firebaseId) async {
-    return await service.postComment(comment, tweetId, firebaseId);
+    try{
+      return await service.postComment(comment,tweetId,firebaseId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
 
   Future<void> likeTweet(int tweetId, String firebaseId) async {
-    return await service.likeTweet(tweetId, firebaseId);
+    try{
+      return await service.likeTweet(tweetId,firebaseId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
 
   Future<void> unLikeTweet(int tweetId, String firebaseId) async {
-    return await service.unLikeTweet(tweetId, firebaseId);
+    try{
+      return await service.unLikeTweet(tweetId,firebaseId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
 
   Future<void> insertTweet(Tweet tweetToInsert, String firebaseId) async {
-    return service.insertTweet(tweetToInsert, firebaseId);
+    try{
+      return await service.insertTweet(tweetToInsert,firebaseId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
-
   Future<List<Tweet>> searchTweets(String searchTerm, String firebaseId) async {
-    return service.searchTweets(searchTerm, firebaseId);
+    try{
+      return await service.searchTweets(searchTerm,firebaseId);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
 }

@@ -38,7 +38,7 @@ class RegisterBodyState extends State<RegisterBody> {
         },
         listener: (context, state) {
           if (state is SignUpSuccess) {
-            GoRouter.of(context).go(AppRouter.kVerifyScreen);
+            GoRouter.of(context).go(AppRouter.kScreensNavigator);
           } else if (state is SignUpFailure) {
             Utilities.showErrorSnackBar(context, "Error Signing up");
           }

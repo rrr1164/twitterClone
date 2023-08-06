@@ -17,7 +17,7 @@ class TweetsService {
         "getting followed tweets by Firebase Uid: ${response.statusCode}");
     if (response.statusCode == 200) {
       if (response.body.isNotEmpty) {
-        return convertDynamicToTweets(
+        return await convertDynamicToTweets(
             jsonDecode(response.body) as List<dynamic>);
       } else {
         return [];
@@ -36,7 +36,7 @@ class TweetsService {
     debugPrint("getting user tweets by Firebase Uid: ${response.statusCode}");
     if (response.statusCode == 200) {
       if (response.body.isNotEmpty) {
-        return convertDynamicToTweets(
+        return await convertDynamicToTweets(
             jsonDecode(response.body) as List<dynamic>);
       } else {
         return [];
@@ -68,21 +68,39 @@ class TweetsService {
     Tweet tweetToInsert,
     String firebaseId,
   ) async {
-    String request;
-    String? tweetImage = tweetToInsert.imageUrl;
-    if (tweetImage == null) {
-      request =
-          "${Utilities.baseApiUrl}/insert_tweet.php?firebase_id=$firebaseId&tweet_content=${Uri.encodeComponent(tweetToInsert.content)}";
-    } else {
-      request =
-          "${Utilities.baseApiUrl}/insert_tweet.php?firebase_id=$firebaseId&tweet_content=${Uri.encodeComponent(tweetToInsert.content)}&image=${Uri.encodeComponent(tweetImage)}";
-    }
-    http.Response response = await http.get(Uri.parse(request));
-    debugPrint("inserting tweet by Firebase Uid request: $request");
+    String insertTweetRequest =
+        "${Utilities.baseApiUrl}/insert_tweet.php?firebase_id=$firebaseId&tweet_content=${Uri.encodeComponent(tweetToInsert.getContent())}";
+    http.Response insertTweetResponse =
+        await http.get(Uri.parse(insertTweetRequest));
+    debugPrint("inserting tweet by Firebase Uid request: $insertTweetRequest");
     debugPrint(
-        "inserting tweet by Firebase Uid status code: ${response.statusCode}");
-    if (response.statusCode != 201) {
-      throw "something went wrong ${response.statusCode}";
+        "inserting tweet by Firebase Uid status code: ${insertTweetResponse.statusCode}");
+    if (insertTweetResponse.statusCode != 201) {
+      throw "something went wrong ${insertTweetResponse.statusCode}";
+    }
+    tweetToInsert.setId(int.parse(insertTweetResponse.body));
+    try {
+      insertTweetImages(tweetToInsert);
+    } catch (error) {
+      throw error.toString();
+    }
+  }
+
+  Future<void> insertTweetImages(Tweet tweetToInsert) async {
+    List<String> tweetImages = tweetToInsert.getImageUrls();
+    if (tweetImages.isNotEmpty) {
+      for (String tweetImage in tweetImages) {
+        String insertTweetImageRequest =
+            "${Utilities.baseApiUrl}/insert_tweet_image.php?url=${Uri.encodeComponent(tweetImage)}&tweet_id=${tweetToInsert.getId()}";
+        http.Response insertTweetImageResponse =
+            await http.get(Uri.parse(insertTweetImageRequest));
+        debugPrint("inserting tweet image request: $insertTweetImageRequest");
+        debugPrint(
+            "inserting tweet image code: ${insertTweetImageResponse.statusCode}");
+        if (insertTweetImageResponse.statusCode != 201) {
+          throw "something went wrong ${insertTweetImageResponse.statusCode}";
+        }
+      }
     }
   }
 
@@ -131,11 +149,13 @@ class TweetsService {
     }
   }
 
-  List<Tweet> convertDynamicToTweets(List<dynamic> dynamicTweets) {
+  Future<List<Tweet>> convertDynamicToTweets(
+      List<dynamic> dynamicTweets) async {
     List<Tweet> tweets = [];
     for (Map<String, dynamic> map in dynamicTweets) {
       if (map.isNotEmpty) {
         Tweet tweet = Tweet.fromJson(map);
+        tweet.setImageUrls(await _getTweetImagesById(tweet.getId()));
         tweets.add(tweet);
       }
     }
@@ -153,6 +173,26 @@ class TweetsService {
     return comments;
   }
 
+  Future<List<String>> _getTweetImagesById(int tweetId) async {
+    String request =
+        "${Utilities.baseApiUrl}/get_tweet_images.php?tweet_id=$tweetId";
+    http.Response response = await http.get(Uri.parse(request));
+    debugPrint("getting tweet images request: $request");
+    debugPrint("getting tweet images status code: ${response.statusCode}");
+    List<String> imageUrls = [];
+    if (response.statusCode == 200) {
+      if (response.body.isNotEmpty) {
+        List<dynamic> dynamicImagesUrls = jsonDecode(response.body);
+        for (Map<String, dynamic> map in dynamicImagesUrls) {
+          if (map.isNotEmpty) {
+            imageUrls.add(map["url"]);
+          }
+        }
+      }
+    }
+    return imageUrls;
+  }
+
   Future<List<Tweet>> searchTweets(String searchTerm, String firebaseId) async {
     String request =
         "${Utilities.baseApiUrl}/search_tweets.php?search_term=${Uri.encodeComponent(searchTerm)}&firebase_id=$firebaseId";
@@ -161,7 +201,7 @@ class TweetsService {
     debugPrint("searching tweets by term status code: ${response.statusCode}");
     if (response.statusCode == 200) {
       if (response.body.isNotEmpty) {
-        return convertDynamicToTweets(
+        return await convertDynamicToTweets(
             jsonDecode(response.body) as List<dynamic>);
       } else {
         return [];

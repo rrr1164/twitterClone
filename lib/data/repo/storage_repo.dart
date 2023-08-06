@@ -5,9 +5,19 @@ class StorageRepo {
   StorageService service = StorageService();
 
   Future<String> uploadProfilePictureToStorage(XFile image) async {
-    return await service.uploadProfilePictureToStorage(image);
+    try{
+      return await service.uploadProfilePictureToStorage(image);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
   Future<String> uploadTweetImageToStorage(XFile image) async {
-    return await service.uploadTweetImageToStorage(image);
+    try{
+      return await service.uploadTweetImageToStorage(image);
+    }
+    catch(error){
+      throw error.toString();
+    }
   }
 }

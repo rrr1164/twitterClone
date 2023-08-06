@@ -32,8 +32,7 @@ class _InitialRouterScreenState extends State<InitialRouterScreen> {
   }
 
   Future<void> routeUser() async {
-    if (FirebaseAuth.instance.currentUser != null &&
-        FirebaseAuth.instance.currentUser!.emailVerified) {
+    if (FirebaseAuth.instance.currentUser != null) {
       GoRouter.of(context).go(AppRouter.kScreensNavigator);
     } else {
       GoRouter.of(context).go(AppRouter.kRegisterScreen);

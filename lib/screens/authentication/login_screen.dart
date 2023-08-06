@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -39,12 +38,7 @@ class _LoginBodyState extends State<LoginBody> {
         },
         listener: (context, state) {
           if (state is LoginSuccess) {
-            if (FirebaseAuth.instance.currentUser != null &&
-                !FirebaseAuth.instance.currentUser!.emailVerified) {
-              GoRouter.of(context).go(AppRouter.kVerifyScreen);
-            } else {
-              GoRouter.of(context).go(AppRouter.kScreensNavigator);
-            }
+            GoRouter.of(context).go(AppRouter.kScreensNavigator);
           } else if (state is LoginFailure) {
             Utilities.showErrorSnackBar(context, "Error Logging in");
           }

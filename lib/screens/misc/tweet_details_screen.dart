@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:twitterclone/core/assets.dart';
 import 'package:twitterclone/cubit/tweet_comments/tweet_comments_cubit.dart';
 import 'package:twitterclone/cubit/tweet_comments/tweet_comments_state.dart';
 import 'package:twitterclone/widgets/single_comment_widget.dart';
@@ -23,7 +22,7 @@ class _TweetDetailsState extends State<TweetDetailsScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    context.read<TweetCommentsCubit>().fetchComments(widget.tweet.id);
+    context.read<TweetCommentsCubit>().fetchComments(widget.tweet.getId());
   }
 
   @override
@@ -34,7 +33,7 @@ class _TweetDetailsState extends State<TweetDetailsScreen> {
           onRefresh: () {
             return context
                 .read<TweetCommentsCubit>()
-                .fetchComments(widget.tweet.id);
+                .fetchComments(widget.tweet.getId());
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -79,7 +78,6 @@ class _TweetDetailsState extends State<TweetDetailsScreen> {
                             comment: comment,
                             tweet: widget.tweet,
                           );
-
                         },
                         itemCount: comments.length,
                       );
@@ -94,6 +92,4 @@ class _TweetDetailsState extends State<TweetDetailsScreen> {
       appBar: const CustomAppBar(),
     );
   }
-
-
 }

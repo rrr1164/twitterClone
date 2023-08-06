@@ -80,13 +80,14 @@ class _SingleCommentState extends State<SingleComment> {
                 padding: const EdgeInsets.only(right: 16.0),
                 child: IconButton(
                     onPressed: () async {
-                      widget.tweet.commentsCount--;
+                      widget.tweet.setCommentsCount(
+                          widget.tweet.getCommentsCount() - 1);
                       await widget.tweetsRepository
                           .deleteComment(widget.comment.id);
                       if (context.mounted) {
                         context
                             .read<TweetCommentsCubit>()
-                            .fetchComments(widget.tweet.id);
+                            .fetchComments(widget.tweet.getId());
                       }
                     },
                     icon: const Icon(Icons.delete)),
